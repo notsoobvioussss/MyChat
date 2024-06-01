@@ -1,0 +1,33 @@
+package com.timur.mychat.mvvm
+
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.Query
+import com.timur.mychat.Utils
+import com.timur.mychat.model.RecentChats
+
+class ChatListRepo() {
+    val firestore = FirebaseFirestore.getInstance()
+
+    fun getAllChatList(): LiveData<List<RecentChats>> {
+        val mainChatList = MutableLiveData<List<RecentChats>>()
+        firestore.collection("Conversation${Utils.getUidLoggedIn()}").orderBy("time", Query.Direction.DESCENDING)
+            .addSnapshotListener { snapshot, exception ->
+                if (exception != null) {
+                    return@addSnapshotListener
+                }
+                val chatlist = mutableListOf<RecentChats>()
+                snapshot?.forEach { document ->
+                    val chatlistmodel = document.toObject(RecentChats::class.java)
+                    if (chatlistmodel.sender.equals(Utils.getUidLoggedIn())) {
+                        chatlistmodel.let {
+                            chatlist.add(it)
+                        }
+                    }
+                }
+                mainChatList.value = chatlist
+            }
+        return mainChatList
+    }
+}
