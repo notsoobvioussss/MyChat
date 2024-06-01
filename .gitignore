@@ -14,3 +14,4 @@
 .cxx
 local.properties
 *.json
+/app/src/main/java/com/timur/mychat/notifications/Constants.kt
